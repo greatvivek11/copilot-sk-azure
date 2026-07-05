@@ -14,7 +14,7 @@ for arg in "$@"; do
   esac
 done
 
-info() { printf '[local-llm] %s\n' "$*"; }
+info() { printf '[local-llm] %s\n' "$*" >&2; }
 warn() { printf '[local-llm] warning: %s\n' "$*" >&2; }
 err() { printf '[local-llm] error: %s\n' "$*" >&2; }
 
@@ -226,7 +226,7 @@ download_with_fallbacks() {
       info "Attempting download for $model from $url"
 
       if command -v curl >/dev/null 2>&1; then
-        if curl -fL --retry 6 --retry-all-errors -A "azure-aca-aspire-ai-starter-local-setup/1.0" -C - "${auth_args[@]}" -o "$destination" "$url"; then
+        if curl -fL --retry 6 --retry-all-errors -A "azure-aca-aspire-ai-starter-local-setup/1.0" -C - ${auth_args[@]+"${auth_args[@]}"} -o "$destination" "$url"; then
           if model_file_meets_min_size "$model" "$destination" "$min_size_mb" false; then
             return 0
           fi
@@ -256,7 +256,7 @@ download_with_fallbacks() {
       info "Attempting download for $model from $url"
 
       if command -v curl >/dev/null 2>&1; then
-        if curl -fL --retry 6 --retry-all-errors -A "azure-aca-aspire-ai-starter-local-setup/1.0" -C - "${auth_args[@]}" -o "$destination" "$url"; then
+        if curl -fL --retry 6 --retry-all-errors -A "azure-aca-aspire-ai-starter-local-setup/1.0" -C - ${auth_args[@]+"${auth_args[@]}"} -o "$destination" "$url"; then
           if model_file_meets_min_size "$model" "$destination" "$min_size_mb" false; then
             return 0
           fi

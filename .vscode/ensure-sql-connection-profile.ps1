@@ -78,31 +78,15 @@ $database = "AcaAspireAiTemplate"
 $user = "sa"
 $password = "P@ssw0rd"
 
-$connectionProperty = @"
-"mssql.connections": [
-  {
-        "id": "mssql-container-localhost-$sqlHostPort",
-        "groupId": "ROOT",
-    "server": "$server",
-        "port": $sqlHostPort,
-    "database": "$database",
-    "authenticationType": "SqlLogin",
-    "user": "$user",
-    "password": "$password",
-    "connectionString": "Server=$server,$sqlHostPort;Database=$database;User ID=$user;Password=$password;Encrypt=False;TrustServerCertificate=True;Connection Timeout=15",
-        "encrypt": "Optional",
-        "trustServerCertificate": true,
-    "emptyPasswordInput": false,
-    "savePassword": false,
-    "profileName": "mssql-container"
-  }
-]
-"@
-
 $settingsRaw = [System.IO.File]::ReadAllText($settingsPath)
 if ([string]::IsNullOrWhiteSpace($settingsRaw)) {
     $settingsRaw = "{}"
 }
+
+# VS Code settings are JSONC; normalize to strict JSON for PowerShell parsing.
+$settingsRaw = [System.Text.RegularExpressions.Regex]::Replace($settingsRaw, '/\*[\s\S]*?\*/', '')
+$settingsRaw = [System.Text.RegularExpressions.Regex]::Replace($settingsRaw, '(?m)^\s*//.*$', '')
+$settingsRaw = [System.Text.RegularExpressions.Regex]::Replace($settingsRaw, ',\s*([}\]])', '$1')
 
 try {
     $settings = $settingsRaw | ConvertFrom-Json
@@ -121,7 +105,6 @@ $connectionProfile = [pscustomobject]@{
     authenticationType = "SqlLogin"
     user = $user
     password = $password
-    connectionString = "Server=$server,$sqlHostPort;Database=$database;User ID=$user;Password=$password;Encrypt=False;TrustServerCertificate=True;Connection Timeout=15"
     encrypt = "Optional"
     trustServerCertificate = $true
     emptyPasswordInput = $false

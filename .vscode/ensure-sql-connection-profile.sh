@@ -79,10 +79,23 @@ const [settingsPath, portRaw, server, database, user, password] = process.argv.s
 const port = Number(portRaw);
 const profileName = `mssql-container-${port}`;
 
+function stripJsonComments(input) {
+  return input
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+}
+
+function stripTrailingCommas(input) {
+  return input.replace(/,\s*([}\]])/g, '$1');
+}
+
 let root = {};
 try {
   const content = fs.readFileSync(settingsPath, 'utf8').trim();
-  root = content ? JSON.parse(content) : {};
+  if (content) {
+    const normalized = stripTrailingCommas(stripJsonComments(content));
+    root = JSON.parse(normalized);
+  }
 } catch {
   root = {};
 }
@@ -97,11 +110,10 @@ root['mssql.connections'] = [
     authenticationType: 'SqlLogin',
     user,
     password,
-    connectionString: `Server=${server},${port};Database=${database};User ID=${user};Password=${password};Encrypt=False;TrustServerCertificate=True;Connection Timeout=15`,
     encrypt: 'Optional',
     trustServerCertificate: true,
     emptyPasswordInput: false,
-    savePassword: true,
+    savePassword: false,
     profileName
   }
 ];
